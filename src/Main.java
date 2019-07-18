@@ -111,40 +111,32 @@ public class Main extends JFrame {
         // 添加串口监听
         assert mSerialport != null;
         SerialPortManager.addListener(mSerialport, () -> {
-            try {
-                if (mSerialport == null) {
-                    plainMessage("", "串口对象为空，监听失败！");
-                } else {
-                    // 读取串口数据, 传入结束标志
-                    data = SerialPortManager.readFromPort(mSerialport, (byte) 0);
-                    ArrayList<Double> res = getRes(data);
-                    textArea.append("pit: " + res.get(0) + "\t");
-                    textArea.append("rol: " + res.get(1) + "\t");
-                    textArea.append("yaw: " + res.get(2) + "\t");
-                    textArea.append("\n");
-                }
-            } catch (Exception e) {
-                plainMessage("", e.toString());
-                // 发生读取错误时显示错误信息后退出系统
-                System.exit(0);
+            if (mSerialport == null) {
+                plainMessage("", "串口对象为空，监听失败！");
+            } else {
+                // 读取串口数据, 传入结束标志
+                data = SerialPortManager.readFromPort(mSerialport, (byte) 0xff);
+                System.out.println(Arrays.toString(data));
+                ArrayList<Double> res = getRes(data);
+                textArea.setText("");
+                textArea.append("pit: " + res.get(0) + "\t");
+                textArea.append("rol: " + res.get(1) + "\t");
+                textArea.append("yaw: " + res.get(2) + "\t");
+                textArea.append("\n");
             }
         });
     }
 
     public static ArrayList<Double> getRes(byte[] data) {
         ArrayList<Integer> res1 = new ArrayList<>();
-        for (int i = 0; i < data.length; i++) {
-            res1.add((data[i] & 0xFF));
-            if (res1.get(i) == 10 && i + 1 < data.length && data[i + 1] == -86) {
-                break;
-            }
+        for (byte datum : data) {
+            res1.add((datum & 0xFF));
         }
 
         ArrayList<Double> res = new ArrayList<>();
         res.add(((res1.get(1) << 8) + res1.get(2)) / 100.0);
         res.add(((res1.get(3) << 8) + res1.get(4)) / 100.0);
         res.add(((res1.get(5) << 8) + res1.get(6)) / 100.0);
-
         return res;
     }
 
