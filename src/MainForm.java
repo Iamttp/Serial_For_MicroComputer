@@ -158,7 +158,10 @@ public class MainForm extends JFrame {
             textArea.append("CH_PIT: " + res.get(4) + "\t");
             textArea.append("CH_THR: " + res.get(5) + "\t");
             textArea.append("CH_YAW: " + res.get(6) + "\t\n");
-
+            textArea.append("pos_x: " + res.get(7) + "\t");
+            textArea.append("pos_y: " + res.get(8) + "\t\n");
+            textArea.append("ground_pos_err_h_cm[0]: " + res.get(9) + "\t");
+            textArea.append("ground_pos_err_h_cm[1]: " + res.get(10) + "\t");
             textArea.append("\n");
             textArea.append("波特率为115200\n");
             textArea.append("线颜色顺序为：黑、红、蓝、绿\n");
@@ -174,7 +177,8 @@ public class MainForm extends JFrame {
         }
         ArrayList<Integer> res1 = new ArrayList<>();
         for (byte datum : data) {
-            res1.add((datum & 0xFF));
+//            res1.add((datum & 0xFF));
+            res1.add((int) datum);
         }
         System.out.println(res1);
         // -------------------------------------  TODO 显示框部分
@@ -191,6 +195,10 @@ public class MainForm extends JFrame {
         res.add((double) ((res1.get(9) << 8) + res1.get(10)));
         res.add((double) ((res1.get(11) << 8) + res1.get(12)));
         res.add((double) ((res1.get(13) << 8) + res1.get(14)));
+        res.add((double) ((res1.get(15) << 8) + res1.get(16)));
+        res.add((double) ((res1.get(17) << 8) + res1.get(18)));
+        res.add((double) (res1.get(19) - 128) / 10.0);
+        res.add((double) (res1.get(20) - 128) / 10.0);
         // --------------------------------------- TODO 波形图部分
         List<Integer> list = new ArrayList<>();
         list.add((int) (getDouble1));

@@ -143,9 +143,13 @@ public class SerialPortManager {
                 bytesNum = in.read(readBuffer);
             }
             int i = 0;
-            while (readBuffer[0] != end || i < length) {
+            while (true) {
                 bytes = concat(bytes, readBuffer);
                 bytesNum = in.read(readBuffer);
+                if (readBuffer[0] == end && i > length) {
+                    bytes = concat(bytes, readBuffer);
+                    break;
+                }
                 i++;
             }
         } catch (IOException e) {
