@@ -22,6 +22,7 @@ public class MainForm extends JFrame {
     private static byte[] data;
     private boolean isStop = false;
     JButton button2 = new JButton("暂停");
+    JTextField jTextField = new JTextField();
 
     public MainForm() throws HeadlessException {
         setTitle("");
@@ -65,20 +66,26 @@ public class MainForm extends JFrame {
         button2.setFont(new Font("宋体", Font.BOLD, 30));
 
         textArea.setFont(new Font("宋体", Font.BOLD, 30));
-        //分别设置水平和垂直滚动条自动出现
         JScrollPane js = new JScrollPane(textArea);
         js.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS);
         js.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
 
+        jTextField.setText("3");
+        jTextField.addActionListener(e -> dataReceiver.alpha = Double.parseDouble(jTextField.getText()));
+        jTextField.setFont(new Font("宋体", Font.BOLD, 30));
+
         JSplitPane jp = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, comBoxCom, button);
         JSplitPane jpp = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, jp, button2);
-        JSplitPane jp2 = new JSplitPane(JSplitPane.VERTICAL_SPLIT, jpp, js);
-        JSplitPane jp3 = new JSplitPane(JSplitPane.VERTICAL_SPLIT, jp2, dataReceiver);
-        jp3.setResizeWeight(0.5);
+        JSplitPane jppp = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, jpp, jTextField);
         jp.setResizeWeight(0.6);
         jpp.setResizeWeight(0.7);
+        jppp.setResizeWeight(0.8);
+        JSplitPane jp2 = new JSplitPane(JSplitPane.VERTICAL_SPLIT, js, dataReceiver);
+        JSplitPane jp4 = new JSplitPane(JSplitPane.VERTICAL_SPLIT, jppp, jp2);
+        jp2.setResizeWeight(0.5);
+        jp4.setResizeWeight(0.02);
         Container cp = getContentPane();
-        cp.add(jp3, BorderLayout.CENTER);
+        cp.add(jp4, BorderLayout.CENTER);
         setVisible(true);
 
         mCommList = SerialPortManager.findPorts();
@@ -145,7 +152,8 @@ public class MainForm extends JFrame {
             textArea.append("yaw: " + res.get(2) + "\t");
             textArea.append("\n");
             textArea.append("波特率为115200\n");
-            textArea.append("线颜色顺序为：黑、红、蓝、绿");
+            textArea.append("线颜色顺序为：黑、红、蓝、绿\n");
+            textArea.append("默认波形图比例为3.0");
             // TODO 调试开启
 //        textArea.append(Arrays.toString(data));
         }

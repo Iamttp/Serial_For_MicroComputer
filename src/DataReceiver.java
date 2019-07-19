@@ -8,6 +8,7 @@ class DataReceiver extends JPanel {
     public static final int MAX_VALUE = 200;          // 接收到的数据的最大值.
     public static final int MAX_COUNT_OF_VALUES = 50; // 最多保存数据的个数.
     private int count;
+    public double alpha = 3.0;
 
     DataReceiver() {
         this.count = 1;
@@ -40,19 +41,17 @@ class DataReceiver extends JPanel {
             }
             for (int i = 0; i < length - 1; ++i) {
                 g2d.drawLine(xDelta * (MAX_COUNT_OF_VALUES - length + i),
-                        h - normalizeValueForYAxis(values.get(i).get(j), h) - MAX_VALUE / 2,
+                        h - normalizeValueForYAxis((int) (values.get(i).get(j) * alpha), h) - MAX_VALUE / 2,
                         xDelta * (MAX_COUNT_OF_VALUES - length + i + 1),
-                        h - normalizeValueForYAxis(values.get(i + 1).get(j), h) - MAX_VALUE / 2);
+                        h - normalizeValueForYAxis((int) (values.get(i + 1).get(j) * alpha), h) - MAX_VALUE / 2);
             }
         }
 
-        drawGrayLine(g2d, h, 0);
-        drawGrayLine(g2d, h, 20);
-        drawGrayLine(g2d, h, -20);
-        drawGrayLine(g2d, h, 40);
-        drawGrayLine(g2d, h, -40);
-        drawGrayLine(g2d, h, 60);
-        drawGrayLine(g2d, h, -60);
+        drawGrayLine(g2d, h, (int) (0 * alpha));
+        drawGrayLine(g2d, h, (int) (-10 * alpha));
+        drawGrayLine(g2d, h, (int) (10 * alpha));
+        drawGrayLine(g2d, h, (int) (-20 * alpha));
+        drawGrayLine(g2d, h, (int) (20 * alpha));
     }
 
     private void drawGrayLine(Graphics2D g2d, int h, int m) {
