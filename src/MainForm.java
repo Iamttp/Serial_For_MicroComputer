@@ -5,19 +5,24 @@ import javax.swing.*;
 import javax.swing.event.PopupMenuEvent;
 import javax.swing.event.PopupMenuListener;
 import java.awt.*;
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
-public class Main extends JFrame {
+/**
+ * @author ttp
+ */
+public class MainForm extends JFrame {
     private final JButton button = new JButton("读取");
     public JComboBox<String> comBoxCom = new JComboBox<>();
     public java.util.List<String> mCommList = null;
     public SerialPort mSerialport;
     private JTextArea textArea = new JTextArea();
-
+    public DataReceiver dataReceiver = new DataReceiver();
     static byte[] data;
 
-    public Main() throws HeadlessException {
+    public MainForm() throws HeadlessException {
         setTitle("");
         setSize(800, 600);
         setDefaultCloseOperation(EXIT_ON_CLOSE);
@@ -65,9 +70,11 @@ public class Main extends JFrame {
         js.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS);
         js.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
         JSplitPane jp2 = new JSplitPane(JSplitPane.VERTICAL_SPLIT, jp, js);
+        JSplitPane jp3 = new JSplitPane(JSplitPane.VERTICAL_SPLIT, jp2, dataReceiver);
+        jp3.setResizeWeight(0.5);
         jp.setResizeWeight(0.5);
         Container cp = getContentPane();
-        cp.add(jp2, BorderLayout.CENTER);
+        cp.add(jp3, BorderLayout.CENTER);
         setVisible(true);
     }
 
@@ -127,20 +134,30 @@ public class Main extends JFrame {
         });
     }
 
-    public static ArrayList<Double> getRes(byte[] data) {
+    public ArrayList<Double> getRes(byte[] data) {
         ArrayList<Integer> res1 = new ArrayList<>();
         for (byte datum : data) {
             res1.add((datum & 0xFF));
         }
 
         ArrayList<Double> res = new ArrayList<>();
-        res.add(((res1.get(1) << 8) + res1.get(2)) / 100.0);
-        res.add(((res1.get(3) << 8) + res1.get(4)) / 100.0);
-        res.add(((res1.get(5) << 8) + res1.get(6)) / 100.0);
+        DecimalFormat df = new DecimalFormat("#.##");
+        double get_double1 = Double.parseDouble(df.format(((res1.get(1) << 8) + res1.get(2)) / 100.0 - 180));
+        double get_double2 = Double.parseDouble(df.format(((res1.get(3) << 8) + res1.get(4)) / 100.0 - 180));
+        double get_double3 = Double.parseDouble(df.format(((res1.get(5) << 8) + res1.get(6)) / 100.0 - 180));
+        res.add(get_double1);
+        res.add(get_double2);
+        res.add(get_double3);
+        List<Integer> list = new ArrayList<>();
+        list.add((int) (dataReceiver.MAX_VALUE * (get_double1 / 90)));
+        list.add((int) (dataReceiver.MAX_VALUE * (get_double2 / 90)));
+        list.add((int) (dataReceiver.MAX_VALUE * (get_double3 / 90)));
+        dataReceiver.addValue(list); // 产生一个数据，并模拟接收并放到容器里.
+        repaint();
         return res;
     }
 
     public static void main(String[] args) {
-        new Main();
+        new MainForm();
     }
 }
