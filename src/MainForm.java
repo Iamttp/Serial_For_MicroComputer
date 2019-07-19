@@ -26,7 +26,7 @@ public class MainForm extends JFrame {
 
     public MainForm() throws HeadlessException {
         setTitle("");
-        setSize(800, 600);
+        setSize(1100, 600);
         setDefaultCloseOperation(EXIT_ON_CLOSE);
 
         comBoxCom.addPopupMenuListener(new PopupMenuListener() {
@@ -146,10 +146,15 @@ public class MainForm extends JFrame {
         System.out.println(Arrays.toString(data));
         ArrayList<Double> res = getRes(data);
         if (!isStop) {
+            // -------------------------------------  TODO 显示框部分
             textArea.setText("");
             textArea.append("pit: " + res.get(0) + "\t");
             textArea.append("rol: " + res.get(1) + "\t");
-            textArea.append("yaw: " + res.get(2) + "\t");
+            textArea.append("yaw: " + res.get(2) + "\t\n");
+            textArea.append("CH_ROL: " + res.get(3) + "\t");
+            textArea.append("CH_PIT: " + res.get(4) + "\t");
+            textArea.append("CH_THR: " + res.get(5) + "\t");
+            textArea.append("CH_YAW: " + res.get(6) + "\t");
             textArea.append("\n");
             textArea.append("波特率为115200\n");
             textArea.append("线颜色顺序为：黑、红、蓝、绿\n");
@@ -165,6 +170,7 @@ public class MainForm extends JFrame {
             res1.add((datum & 0xFF));
         }
 
+        // -------------------------------------  TODO 显示框部分
         ArrayList<Double> res = new ArrayList<>();
         DecimalFormat df = new DecimalFormat("#.##");
         double getDouble1 = Double.parseDouble(df.format(((res1.get(1) << 8) + res1.get(2)) / 100.0 - 180));
@@ -173,10 +179,15 @@ public class MainForm extends JFrame {
         res.add(getDouble1);
         res.add(getDouble2);
         res.add(getDouble3);
+        res.add(Double.valueOf(res1.get(7)));
+        res.add(Double.valueOf(res1.get(8)));
+        res.add(Double.valueOf(res1.get(9)));
+        res.add(Double.valueOf(res1.get(10)));
+        // --------------------------------------- TODO 波形图部分
         List<Integer> list = new ArrayList<>();
         list.add((int) (getDouble1));
         list.add((int) (getDouble2));
-        list.add((int) (getDouble3));
+//        list.add((int) (getDouble3));
         dataReceiver.addValue(list); // 产生一个数据，并模拟接收并放到容器里.
         if (!isStop) {
             repaint();
