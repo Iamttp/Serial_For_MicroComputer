@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 class DataReceiver extends JPanel {
-    //    private List<Integer> values = new ArrayList<>(); // 保存接收到的数据的容器.
     private List<List<Integer>> values = new ArrayList<>(); // 保存接收到的数据的容器.
     public static final int MAX_VALUE = 200;          // 接收到的数据的最大值.
     public static final int MAX_COUNT_OF_VALUES = 50; // 最多保存数据的个数.

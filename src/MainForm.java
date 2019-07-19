@@ -14,13 +14,14 @@ import java.util.List;
  * @author ttp
  */
 public class MainForm extends JFrame {
-    private final JButton button = new JButton("读取");
     public JComboBox<String> comBoxCom = new JComboBox<>();
     public java.util.List<String> mCommList = null;
-    public SerialPort mSerialport;
+    public SerialPort mSerial;
     private JTextArea textArea = new JTextArea();
     public DataReceiver dataReceiver = new DataReceiver();
-    static byte[] data;
+    private static byte[] data;
+    private boolean isStop = false;
+    JButton button2 = new JButton("暂停");
 
     public MainForm() throws HeadlessException {
         setTitle("");
@@ -33,9 +34,8 @@ public class MainForm extends JFrame {
                 mCommList = SerialPortManager.findPorts();
                 // 检查是否有可用串口，有则加入选项中
                 if (mCommList == null || mCommList.size() < 1) {
-                    plainMessage("", "没有搜索到有效串口！");
+                    Util.plainMessage("", "没有搜索到有效串口！");
                 } else {
-                    System.out.println("搜索到有效串口！\n");
                     int index = comBoxCom.getSelectedIndex();
                     comBoxCom.removeAllItems();
                     for (String s : mCommList) {
@@ -57,42 +57,51 @@ public class MainForm extends JFrame {
         });
         comBoxCom.setFont(new Font("宋体", Font.BOLD, 30));
 
-        button.addActionListener(e -> {
-            openSerialPort();
-        });
+        JButton button = new JButton("开始读取");
+        button.addActionListener(e -> openSerialPort());
         button.setFont(new Font("宋体", Font.BOLD, 30));
 
-        JSplitPane jp = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, comBoxCom, button);
+        button2.addActionListener(e -> stop());
+        button2.setFont(new Font("宋体", Font.BOLD, 30));
 
         textArea.setFont(new Font("宋体", Font.BOLD, 30));
         //分别设置水平和垂直滚动条自动出现
         JScrollPane js = new JScrollPane(textArea);
         js.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS);
         js.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
-        JSplitPane jp2 = new JSplitPane(JSplitPane.VERTICAL_SPLIT, jp, js);
+
+        JSplitPane jp = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, comBoxCom, button);
+        JSplitPane jpp = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, jp, button2);
+        JSplitPane jp2 = new JSplitPane(JSplitPane.VERTICAL_SPLIT, jpp, js);
         JSplitPane jp3 = new JSplitPane(JSplitPane.VERTICAL_SPLIT, jp2, dataReceiver);
         jp3.setResizeWeight(0.5);
-        jp.setResizeWeight(0.5);
+        jp.setResizeWeight(0.6);
+        jpp.setResizeWeight(0.7);
         Container cp = getContentPane();
         cp.add(jp3, BorderLayout.CENTER);
         setVisible(true);
-    }
 
-    /**
-     * 自定义的消息提示
-     */
-    public static void plainMessage(String title, String message) {
-        JOptionPane.showMessageDialog(null, message, title,
-                JOptionPane.PLAIN_MESSAGE);
-    }
-
-    public static int byteArrayToInt(byte[] bytes) {
-        int value = 0;
-        for (int i = 0; i < 4; i++) {
-            int shift = (3 - i) * 8;
-            value += (bytes[i] & 0xFF) << shift;
+        mCommList = SerialPortManager.findPorts();
+        // 检查是否有可用串口，有则加入选项中
+        if (mCommList == null || mCommList.size() < 1) {
+            Util.plainMessage("", "没有搜索到有效串口！");
+        } else {
+            int index = comBoxCom.getSelectedIndex();
+            comBoxCom.removeAllItems();
+            for (String s : mCommList) {
+                comBoxCom.addItem(s);
+            }
+            comBoxCom.setSelectedIndex(index);
         }
-        return value;
+    }
+
+    private void stop() {
+        if (!isStop) {
+            button2.setText("开始");
+        } else {
+            button2.setText("暂停");
+        }
+        isStop = !isStop;
     }
 
     /**
@@ -103,35 +112,43 @@ public class MainForm extends JFrame {
         String commName = (String) comBoxCom.getSelectedItem();
         // 波特率默认为115200
         int baudrate = 115200;
-        System.out.println("点击称重\n");
         // 检查串口名称是否获取正确
         if (commName == null || "".equals(commName)) {
-            plainMessage("", "没有搜索到有效串口！");
+            Util.plainMessage("", "没有搜索到有效串口！");
         } else {
             try {
-                mSerialport = SerialPortManager.openPort(commName, baudrate);
+                mSerial = SerialPortManager.openPort(commName, baudrate);
             } catch (PortInUseException e) {
-                plainMessage("", "串口已被占用！");
-                System.out.println("串口已被占用\n");
+                Util.plainMessage("", "串口已被占用！");
             }
         }
         // 添加串口监听
-        assert mSerialport != null;
-        SerialPortManager.addListener(mSerialport, () -> {
-            if (mSerialport == null) {
-                plainMessage("", "串口对象为空，监听失败！");
+        assert mSerial != null;
+        SerialPortManager.addListener(mSerial, () -> {
+            if (mSerial == null) {
+                Util.plainMessage("", "串口对象为空，监听失败！");
             } else {
-                // 读取串口数据, 传入结束标志
-                data = SerialPortManager.readFromPort(mSerialport, (byte) 0xff);
-                System.out.println(Arrays.toString(data));
-                ArrayList<Double> res = getRes(data);
-                textArea.setText("");
-                textArea.append("pit: " + res.get(0) + "\t");
-                textArea.append("rol: " + res.get(1) + "\t");
-                textArea.append("yaw: " + res.get(2) + "\t");
-                textArea.append("\n");
+                doData();
             }
         });
+    }
+
+    private void doData() {
+        // 读取串口数据, TODO 传入结束标志 0xff
+        data = SerialPortManager.readFromPort(mSerial, (byte) 0xff);
+        System.out.println(Arrays.toString(data));
+        ArrayList<Double> res = getRes(data);
+        if (!isStop) {
+            textArea.setText("");
+            textArea.append("pit: " + res.get(0) + "\t");
+            textArea.append("rol: " + res.get(1) + "\t");
+            textArea.append("yaw: " + res.get(2) + "\t");
+            textArea.append("\n");
+            textArea.append("波特率为115200\n");
+            textArea.append("线颜色顺序为：黑、红、蓝、绿");
+            // TODO 调试开启
+//        textArea.append(Arrays.toString(data));
+        }
     }
 
     public ArrayList<Double> getRes(byte[] data) {
@@ -142,18 +159,20 @@ public class MainForm extends JFrame {
 
         ArrayList<Double> res = new ArrayList<>();
         DecimalFormat df = new DecimalFormat("#.##");
-        double get_double1 = Double.parseDouble(df.format(((res1.get(1) << 8) + res1.get(2)) / 100.0 - 180));
-        double get_double2 = Double.parseDouble(df.format(((res1.get(3) << 8) + res1.get(4)) / 100.0 - 180));
-        double get_double3 = Double.parseDouble(df.format(((res1.get(5) << 8) + res1.get(6)) / 100.0 - 180));
-        res.add(get_double1);
-        res.add(get_double2);
-        res.add(get_double3);
+        double getDouble1 = Double.parseDouble(df.format(((res1.get(1) << 8) + res1.get(2)) / 100.0 - 180));
+        double getDouble2 = Double.parseDouble(df.format(((res1.get(3) << 8) + res1.get(4)) / 100.0 - 180));
+        double getDouble3 = Double.parseDouble(df.format(((res1.get(5) << 8) + res1.get(6)) / 100.0 - 180));
+        res.add(getDouble1);
+        res.add(getDouble2);
+        res.add(getDouble3);
         List<Integer> list = new ArrayList<>();
-        list.add((int) (dataReceiver.MAX_VALUE * (get_double1 / 90)));
-        list.add((int) (dataReceiver.MAX_VALUE * (get_double2 / 90)));
-        list.add((int) (dataReceiver.MAX_VALUE * (get_double3 / 90)));
+        list.add((int) (DataReceiver.MAX_VALUE * (getDouble1 / 90)));
+        list.add((int) (DataReceiver.MAX_VALUE * (getDouble2 / 90)));
+        list.add((int) (DataReceiver.MAX_VALUE * (getDouble3 / 90)));
         dataReceiver.addValue(list); // 产生一个数据，并模拟接收并放到容器里.
-        repaint();
+        if (!isStop) {
+            repaint();
+        }
         return res;
     }
 
