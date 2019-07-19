@@ -166,9 +166,9 @@ public class MainForm extends JFrame {
         res.add(getDouble2);
         res.add(getDouble3);
         List<Integer> list = new ArrayList<>();
-        list.add((int) (DataReceiver.MAX_VALUE * (getDouble1 / 90)));
-        list.add((int) (DataReceiver.MAX_VALUE * (getDouble2 / 90)));
-        list.add((int) (DataReceiver.MAX_VALUE * (getDouble3 / 90)));
+        list.add((int) (getDouble1));
+        list.add((int) (getDouble2));
+        list.add((int) (getDouble3));
         dataReceiver.addValue(list); // 产生一个数据，并模拟接收并放到容器里.
         if (!isStop) {
             repaint();

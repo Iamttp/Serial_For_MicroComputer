@@ -45,6 +45,22 @@ class DataReceiver extends JPanel {
                         h - normalizeValueForYAxis(values.get(i + 1).get(j), h) - MAX_VALUE / 2);
             }
         }
+
+        drawGrayLine(g2d, h, 0);
+        drawGrayLine(g2d, h, 20);
+        drawGrayLine(g2d, h, -20);
+        drawGrayLine(g2d, h, 40);
+        drawGrayLine(g2d, h, -40);
+        drawGrayLine(g2d, h, 60);
+        drawGrayLine(g2d, h, -60);
+    }
+
+    private void drawGrayLine(Graphics2D g2d, int h, int m) {
+        BasicStroke stroke0 = new BasicStroke(0.5f, BasicStroke.CAP_BUTT,
+                BasicStroke.JOIN_ROUND, 3.5f, new float[]{10, 5}, 0f);
+        g2d.setStroke(stroke0);
+        g2d.setColor(Color.gray);
+        g2d.drawLine(0, h - normalizeValueForYAxis(m, h) - MAX_VALUE / 2, 3 * h, h - normalizeValueForYAxis(m, h) - MAX_VALUE / 2);
     }
 
     /**
