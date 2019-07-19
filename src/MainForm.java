@@ -142,9 +142,12 @@ public class MainForm extends JFrame {
 
     private void doData() {
         // 读取串口数据, TODO 传入结束标志 0xff
-        data = SerialPortManager.readFromPort(mSerial, (byte) 0xff);
+        data = SerialPortManager.readFromPort(mSerial, (byte) 0xaa, (byte) 0xff, 15);
         System.out.println(Arrays.toString(data));
         ArrayList<Double> res = getRes(data);
+        if (res == null) {
+            return;
+        }
         if (!isStop) {
             // -------------------------------------  TODO 显示框部分
             textArea.setText("");
@@ -154,7 +157,8 @@ public class MainForm extends JFrame {
             textArea.append("CH_ROL: " + res.get(3) + "\t");
             textArea.append("CH_PIT: " + res.get(4) + "\t");
             textArea.append("CH_THR: " + res.get(5) + "\t");
-            textArea.append("CH_YAW: " + res.get(6) + "\t");
+            textArea.append("CH_YAW: " + res.get(6) + "\t\n");
+
             textArea.append("\n");
             textArea.append("波特率为115200\n");
             textArea.append("线颜色顺序为：黑、红、蓝、绿\n");
@@ -165,11 +169,14 @@ public class MainForm extends JFrame {
     }
 
     public ArrayList<Double> getRes(byte[] data) {
+        if (data == null) {
+            return null;
+        }
         ArrayList<Integer> res1 = new ArrayList<>();
         for (byte datum : data) {
             res1.add((datum & 0xFF));
         }
-
+        System.out.println(res1);
         // -------------------------------------  TODO 显示框部分
         ArrayList<Double> res = new ArrayList<>();
         DecimalFormat df = new DecimalFormat("#.##");
@@ -179,10 +186,11 @@ public class MainForm extends JFrame {
         res.add(getDouble1);
         res.add(getDouble2);
         res.add(getDouble3);
-        res.add(Double.valueOf(res1.get(7)));
-        res.add(Double.valueOf(res1.get(8)));
-        res.add(Double.valueOf(res1.get(9)));
-        res.add(Double.valueOf(res1.get(10)));
+        // TODO 运算符优先级
+        res.add((double) ((res1.get(7) << 8) + res1.get(8)));
+        res.add((double) ((res1.get(9) << 8) + res1.get(10)));
+        res.add((double) ((res1.get(11) << 8) + res1.get(12)));
+        res.add((double) ((res1.get(13) << 8) + res1.get(14)));
         // --------------------------------------- TODO 波形图部分
         List<Integer> list = new ArrayList<>();
         list.add((int) (getDouble1));

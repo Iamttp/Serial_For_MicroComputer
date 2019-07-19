@@ -128,9 +128,10 @@ public class SerialPortManager {
      * 从串口读取数据
      *
      * @param serialPort 当前已建立连接的SerialPort对象
+     * @param length
      * @return 读取到的数据
      */
-    public static byte[] readFromPort(SerialPort serialPort, byte end) {
+    public static byte[] readFromPort(SerialPort serialPort, byte begin, byte end, int length) {
         InputStream in = null;
         byte[] bytes = {};
         try {
@@ -138,9 +139,14 @@ public class SerialPortManager {
             // 缓冲区大小为一个字节
             byte[] readBuffer = new byte[1];
             int bytesNum = in.read(readBuffer);
-            while (end != readBuffer[0]) {
+            while (readBuffer[0] != begin) {
+                bytesNum = in.read(readBuffer);
+            }
+            int i = 0;
+            while (readBuffer[0] != end || i < length) {
                 bytes = concat(bytes, readBuffer);
                 bytesNum = in.read(readBuffer);
+                i++;
             }
         } catch (IOException e) {
             e.printStackTrace();
