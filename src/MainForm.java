@@ -26,7 +26,7 @@ public class MainForm extends JFrame {
 
     public MainForm() throws HeadlessException {
         setTitle("");
-        setSize(1100, 600);
+        setSize(1100, 700);
         setDefaultCloseOperation(EXIT_ON_CLOSE);
 
         comBoxCom.addPopupMenuListener(new PopupMenuListener() {
@@ -142,7 +142,7 @@ public class MainForm extends JFrame {
 
     private void doData() {
         // 读取串口数据, TODO 传入结束标志 0xff
-        data = SerialPortManager.readFromPort(mSerial, (byte) 0xaa, (byte) 0xff, 15);
+        data = SerialPortManager.readFromPort(mSerial, (byte) 0xaa, (byte) 0xfe, 34);
         System.out.println(Arrays.toString(data));
         ArrayList<Double> res = getRes(data);
         if (res == null) {
@@ -161,7 +161,14 @@ public class MainForm extends JFrame {
             textArea.append("pos_x: " + res.get(7) + "\t");
             textArea.append("pos_y: " + res.get(8) + "\t\n");
             textArea.append("ground_pos_err_h_cm[0]: " + res.get(9) + "\t");
-            textArea.append("ground_pos_err_h_cm[1]: " + res.get(10) + "\t");
+            textArea.append("ground_pos_err_h_cm[1]: " + res.get(10) + "\t\n");
+            textArea.append("speed_set_h[X]: " + res.get(11) + "\t");
+            textArea.append("speed_set_h[Y]: " + res.get(12) + "\t\n");
+            textArea.append("motor[0]: " + res.get(13) + "\t");
+            textArea.append("motor[1]: " + res.get(14) + "\t");
+            textArea.append("motor[2]: " + res.get(15) + "\t");
+            textArea.append("motor[3]: " + res.get(16) + "\t\n");
+            textArea.append("mc.ct_val_thr: " + res.get(17) + "\t\n");
             textArea.append("\n");
             textArea.append("波特率为115200\n");
             textArea.append("线颜色顺序为：黑、红、蓝、绿\n");
@@ -197,8 +204,15 @@ public class MainForm extends JFrame {
         res.add((double) ((res1.get(13) << 8) + res1.get(14)));
         res.add((double) ((res1.get(15) << 8) + res1.get(16)));
         res.add((double) ((res1.get(17) << 8) + res1.get(18)));
-        res.add((double) (res1.get(19) - 128) / 10.0);
-        res.add((double) (res1.get(20) - 128) / 10.0);
+        res.add((double) ((res1.get(19) << 8) + res1.get(20)) / 100.0);
+        res.add((double) ((res1.get(21) << 8) + res1.get(22)) / 100.0);
+        res.add((double) ((res1.get(23) << 8) + res1.get(24)) / 100.0);
+        res.add((double) ((res1.get(25) << 8) + res1.get(26)) / 100.0);
+        res.add((double) ((res1.get(27) << 8) + res1.get(28)));
+        res.add((double) ((res1.get(29) << 8) + res1.get(30)));
+        res.add((double) ((res1.get(31) << 8) + res1.get(32)));
+        res.add((double) ((res1.get(33) << 8) + res1.get(34)));
+        res.add((double) ((res1.get(35) << 8) + res1.get(36)));
         // --------------------------------------- TODO 波形图部分
         List<Integer> list = new ArrayList<>();
         list.add((int) (getDouble1));
