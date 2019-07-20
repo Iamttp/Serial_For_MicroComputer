@@ -9,9 +9,17 @@ class DataReceiver extends JPanel {
     public static final int MAX_COUNT_OF_VALUES = 50; // 最多保存数据的个数.
     private int count;
     public double alpha = 3.0;
+    public int len;
+
 
     DataReceiver() {
         this.count = 1;
+    }
+
+    DataReceiver(double alpha, int len) {
+        this.alpha = alpha;
+        this.count = 1;
+        this.len = len;
     }
 
     @Override
@@ -47,11 +55,11 @@ class DataReceiver extends JPanel {
             }
         }
 
-        drawGrayLine(g2d, w, h, (int) (0 * alpha));
-        drawGrayLine(g2d, w, h, (int) (-10 * alpha));
-        drawGrayLine(g2d, w, h, (int) (10 * alpha));
-        drawGrayLine(g2d, w, h, (int) (-20 * alpha));
-        drawGrayLine(g2d, w, h, (int) (20 * alpha));
+        drawGrayLine(g2d, w, h, (int) (0 * len * alpha));
+        drawGrayLine(g2d, w, h, (int) (-10 * len * alpha));
+        drawGrayLine(g2d, w, h, (int) (10 * len * alpha));
+        drawGrayLine(g2d, w, h, (int) (-20 * len * alpha));
+        drawGrayLine(g2d, w, h, (int) (20 * len * alpha));
     }
 
     private void drawGrayLine(Graphics2D g2d, int w, int h, int m) {

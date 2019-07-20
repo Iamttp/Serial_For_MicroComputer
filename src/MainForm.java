@@ -18,7 +18,8 @@ public class MainForm extends JFrame {
     public java.util.List<String> mCommList = null;
     public SerialPort mSerial;
     private JTextArea textArea = new JTextArea();
-    public DataReceiver dataReceiver = new DataReceiver();
+    public DataReceiver dataReceiver = new DataReceiver(3, 1);
+    public DataReceiver dataReceiver2 = new DataReceiver(0.1, 30);
     private static byte[] data;
     private boolean isStop = false;
     JButton button2 = new JButton("暂停");
@@ -71,7 +72,7 @@ public class MainForm extends JFrame {
         js.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
 
         jTextField.setText("3");
-        jTextField.addActionListener(e -> dataReceiver.alpha = Double.parseDouble(jTextField.getText()));
+        jTextField.addActionListener(e -> dataReceiver2.alpha = Double.parseDouble(jTextField.getText()));
         jTextField.setFont(new Font("宋体", Font.BOLD, 30));
 
         JSplitPane jp = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, comBoxCom, button);
@@ -80,8 +81,10 @@ public class MainForm extends JFrame {
         jp.setResizeWeight(0.6);
         jpp.setResizeWeight(0.7);
         jppp.setResizeWeight(0.8);
-        JSplitPane jp2 = new JSplitPane(JSplitPane.VERTICAL_SPLIT, js, dataReceiver);
+        JSplitPane jpd = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, dataReceiver, dataReceiver2);
+        JSplitPane jp2 = new JSplitPane(JSplitPane.VERTICAL_SPLIT, js, jpd);
         JSplitPane jp4 = new JSplitPane(JSplitPane.VERTICAL_SPLIT, jppp, jp2);
+        jpd.setResizeWeight(0.5);
         jp2.setResizeWeight(0.5);
         jp4.setResizeWeight(0.02);
         Container cp = getContentPane();
@@ -141,8 +144,8 @@ public class MainForm extends JFrame {
     }
 
     private void doData() {
-        // 读取串口数据, TODO 传入结束标志 0xff
-        data = SerialPortManager.readFromPort(mSerial, (byte) 0xaa, (byte) 0xfe, 34);
+        // 读取串口数据, TODO 传入结束标志 长度改变
+        data = SerialPortManager.readFromPort(mSerial, (byte) 0xaa, (byte) 0xfe, 40);
         System.out.println(Arrays.toString(data));
         ArrayList<Double> res = getRes(data);
         if (res == null) {
@@ -168,12 +171,14 @@ public class MainForm extends JFrame {
             textArea.append("motor[1]: " + res.get(14) + "\t");
             textArea.append("motor[2]: " + res.get(15) + "\t");
             textArea.append("motor[3]: " + res.get(16) + "\t\n");
-            textArea.append("mc.ct_val_thr: " + res.get(17) + "\t\n");
+            textArea.append("mc.ct_val_thr: " + res.get(17) + "\t");
+            textArea.append("mc.ct_val_yaw: " + res.get(18) + "\t");
+            textArea.append("mc.ct_val_rol: " + res.get(19) + "\t");
+            textArea.append("mc.ct_val_pit: " + res.get(20) + "\t");
             textArea.append("\n");
             textArea.append("波特率为115200\n");
             textArea.append("线颜色顺序为：黑、红、蓝、绿\n");
             textArea.append("默认波形图比例为3.0");
-            // TODO 调试开启
 //        textArea.append(Arrays.toString(data));
         }
     }
@@ -213,12 +218,30 @@ public class MainForm extends JFrame {
         res.add((double) ((res1.get(31) << 8) + res1.get(32)));
         res.add((double) ((res1.get(33) << 8) + res1.get(34)));
         res.add((double) ((res1.get(35) << 8) + res1.get(36)));
+        res.add((double) ((res1.get(37) << 8) + res1.get(38)));
+        res.add((double) ((res1.get(39) << 8) + res1.get(40)));
+        res.add((double) ((res1.get(41) << 8) + res1.get(42)));
         // --------------------------------------- TODO 波形图部分
         List<Integer> list = new ArrayList<>();
         list.add((int) (getDouble1));
         list.add((int) (getDouble2));
 //        list.add((int) (getDouble3));
         dataReceiver.addValue(list); // 产生一个数据，并模拟接收并放到容器里.
+
+        // --------------------------------------- TODO 波形图部分2
+        List<Integer> list2 = new ArrayList<>();
+        // 电机数据波形
+        list2.add((res1.get(27) << 8) + res1.get(28));
+        list2.add((res1.get(29) << 8) + res1.get(30));
+        list2.add((res1.get(31) << 8) + res1.get(32));
+        list2.add((res1.get(33) << 8) + res1.get(34));
+        // 电机单个组成数据波形
+//        list2.add((res1.get(35) << 8) + res1.get(36));
+//        list2.add((res1.get(37) << 8) + res1.get(38));
+//        list2.add((res1.get(39) << 8) + res1.get(40));
+//        list2.add((res1.get(41) << 8) + res1.get(42));
+//        list2.add((res1.get(35) << 8) + res1.get(36));
+        dataReceiver2.addValue(list2); // 产生一个数据，并模拟接收并放到容器里.
         if (!isStop) {
             repaint();
         }
