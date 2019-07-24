@@ -60,7 +60,10 @@ public class MainForm extends JFrame {
         comBoxCom.setFont(new Font("宋体", Font.BOLD, 30));
 
         JButton button = new JButton("开始读取");
-        button.addActionListener(e -> openSerialPort());
+        button.addActionListener(e -> {
+            openSerialPort();
+            button.setText("正在读取");
+        });
         button.setFont(new Font("宋体", Font.BOLD, 30));
 
         button2.addActionListener(e -> stop());
@@ -145,7 +148,7 @@ public class MainForm extends JFrame {
 
     private void doData() {
         // 读取串口数据, TODO 传入结束标志 长度改变
-        data = SerialPortManager.readFromPort(mSerial, (byte) 0xaa, (byte) 0xfe, 40);
+        data = SerialPortManager.readFromPort(mSerial, (byte) 0xaa, (byte) 0xfe, 44);
         System.out.println(Arrays.toString(data));
         ArrayList<Double> res = getRes(data);
         if (res == null) {
@@ -174,10 +177,13 @@ public class MainForm extends JFrame {
             textArea.append("mc.ct_val_thr: " + res.get(17) + "\t");
             textArea.append("mc.ct_val_yaw: " + res.get(18) + "\t");
             textArea.append("mc.ct_val_rol: " + res.get(19) + "\t");
-            textArea.append("mc.ct_val_pit: " + res.get(20) + "\t");
+            textArea.append("mc.ct_val_pit: " + res.get(20) + "\t\n");
+            textArea.append("my_jig: " + res.get(21) + " mm\t");
+            textArea.append("ref_height_used: " + res.get(22) + " cm\t");
             textArea.append("\n");
             textArea.append("波特率为115200\n");
             textArea.append("线颜色顺序为：黑、红、蓝、绿\n");
+            textArea.append("默认波形图顺序为：四轴角度、四轴油门\n");
             textArea.append("默认波形图比例为3.0");
 //        textArea.append(Arrays.toString(data));
         }
@@ -221,6 +227,8 @@ public class MainForm extends JFrame {
         res.add((double) ((res1.get(37) << 8) + res1.get(38)));
         res.add((double) ((res1.get(39) << 8) + res1.get(40)));
         res.add((double) ((res1.get(41) << 8) + res1.get(42)));
+        res.add((double) (((res1.get(43) & 0xFF) << 8) + (res1.get(44) & 0xFF)));
+        res.add((double) ((res1.get(45) << 8) + res1.get(46)));
         // --------------------------------------- TODO 波形图部分
         List<Integer> list = new ArrayList<>();
         list.add((int) (getDouble1));
@@ -231,16 +239,17 @@ public class MainForm extends JFrame {
         // --------------------------------------- TODO 波形图部分2
         List<Integer> list2 = new ArrayList<>();
         // 电机数据波形
-        list2.add((res1.get(27) << 8) + res1.get(28));
-        list2.add((res1.get(29) << 8) + res1.get(30));
-        list2.add((res1.get(31) << 8) + res1.get(32));
-        list2.add((res1.get(33) << 8) + res1.get(34));
+//        list2.add((res1.get(27) << 8) + res1.get(28));
+//        list2.add((res1.get(29) << 8) + res1.get(30));
+//        list2.add((res1.get(31) << 8) + res1.get(32));
+//        list2.add((res1.get(33) << 8) + res1.get(34));
         // 电机单个组成数据波形
 //        list2.add((res1.get(35) << 8) + res1.get(36));
 //        list2.add((res1.get(37) << 8) + res1.get(38));
 //        list2.add((res1.get(39) << 8) + res1.get(40));
 //        list2.add((res1.get(41) << 8) + res1.get(42));
-//        list2.add((res1.get(35) << 8) + res1.get(36));
+        list2.add((res1.get(43) << 8) + res1.get(44));
+        list2.add(((res1.get(45) << 8) + res1.get(46)) * 10);
         dataReceiver2.addValue(list2); // 产生一个数据，并模拟接收并放到容器里.
         if (!isStop) {
             repaint();
