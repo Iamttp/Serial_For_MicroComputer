@@ -20,6 +20,7 @@ public class MainForm extends JFrame {
     private JTextArea textArea = new JTextArea();
     public DataReceiver dataReceiver = new DataReceiver(3, 1);
     public DataReceiver dataReceiver2 = new DataReceiver(0.1, 30);
+    public DataReceiver dataReceiver3 = new DataReceiver(0.1, 30);
     private static byte[] data;
     private boolean isStop = false;
     JButton button2 = new JButton("暂停");
@@ -27,7 +28,7 @@ public class MainForm extends JFrame {
 
     public MainForm() throws HeadlessException {
         setTitle("");
-        setSize(1100, 700);
+        setSize(1300, 750);
         setDefaultCloseOperation(EXIT_ON_CLOSE);
 
         comBoxCom.addPopupMenuListener(new PopupMenuListener() {
@@ -76,6 +77,7 @@ public class MainForm extends JFrame {
 
         jTextField.setText("3");
         jTextField.addActionListener(e -> dataReceiver2.alpha = Double.parseDouble(jTextField.getText()));
+        jTextField.addActionListener(e -> dataReceiver3.alpha = Double.parseDouble(jTextField.getText()));
         jTextField.setFont(new Font("宋体", Font.BOLD, 30));
 
         JSplitPane jp = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, comBoxCom, button);
@@ -85,9 +87,11 @@ public class MainForm extends JFrame {
         jpp.setResizeWeight(0.7);
         jppp.setResizeWeight(0.8);
         JSplitPane jpd = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, dataReceiver, dataReceiver2);
-        JSplitPane jp2 = new JSplitPane(JSplitPane.VERTICAL_SPLIT, js, jpd);
+        JSplitPane jpdd = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, jpd, dataReceiver3);
+        JSplitPane jp2 = new JSplitPane(JSplitPane.VERTICAL_SPLIT, js, jpdd);
         JSplitPane jp4 = new JSplitPane(JSplitPane.VERTICAL_SPLIT, jppp, jp2);
         jpd.setResizeWeight(0.5);
+        jpdd.setResizeWeight(0.66);
         jp2.setResizeWeight(0.5);
         jp4.setResizeWeight(0.02);
         Container cp = getContentPane();
@@ -179,7 +183,8 @@ public class MainForm extends JFrame {
             textArea.append("mc.ct_val_rol: " + res.get(19) + "\t");
             textArea.append("mc.ct_val_pit: " + res.get(20) + "\t\n");
             textArea.append("my_jig: " + res.get(21) + " mm\t");
-            textArea.append("ref_height_used: " + res.get(22) + " cm\t");
+            textArea.append("ref_height_used: " + res.get(22) + " cm\t\n");
+            textArea.append("opmv.lt.angle: " + res.get(23) + "\t");
             textArea.append("\n");
             textArea.append("波特率为115200\n");
             textArea.append("线颜色顺序为：黑、红、蓝、绿\n");
@@ -229,6 +234,11 @@ public class MainForm extends JFrame {
         res.add((double) ((res1.get(41) << 8) + res1.get(42)));
         res.add((double) (((res1.get(43) & 0xFF) << 8) + (res1.get(44) & 0xFF)));
         res.add((double) ((res1.get(45) << 8) + res1.get(46)));
+        if (res1.get(47) < 0) {
+            res.add((double) (90 + res1.get(47)));
+        } else {
+            res.add((double) (res1.get(47)));
+        }
         // --------------------------------------- TODO 波形图部分
         List<Integer> list = new ArrayList<>();
         list.add((int) (getDouble1));
@@ -239,18 +249,21 @@ public class MainForm extends JFrame {
         // --------------------------------------- TODO 波形图部分2
         List<Integer> list2 = new ArrayList<>();
         // 电机数据波形
-//        list2.add((res1.get(27) << 8) + res1.get(28));
-//        list2.add((res1.get(29) << 8) + res1.get(30));
-//        list2.add((res1.get(31) << 8) + res1.get(32));
-//        list2.add((res1.get(33) << 8) + res1.get(34));
+        List<Integer> list3 = new ArrayList<>();
+        list3.add((res1.get(27) << 8) + res1.get(28));
+        list3.add((res1.get(29) << 8) + res1.get(30));
+        list3.add((res1.get(31) << 8) + res1.get(32));
+        list3.add((res1.get(33) << 8) + res1.get(34));
         // 电机单个组成数据波形
-//        list2.add((res1.get(35) << 8) + res1.get(36));
-//        list2.add((res1.get(37) << 8) + res1.get(38));
-//        list2.add((res1.get(39) << 8) + res1.get(40));
-//        list2.add((res1.get(41) << 8) + res1.get(42));
-        list2.add((res1.get(43) << 8) + res1.get(44));
-        list2.add(((res1.get(45) << 8) + res1.get(46)) * 10);
+        list2.add((res1.get(35) << 8) + res1.get(36));
+        list2.add((res1.get(37) << 8) + res1.get(38));
+        list2.add((res1.get(39) << 8) + res1.get(40));
+        list2.add((res1.get(41) << 8) + res1.get(42));
+//        list2.add((res1.get(43) << 8) + res1.get(44));
+//        list2.add(((res1.get(45) << 8) + res1.get(46)) * 10);
         dataReceiver2.addValue(list2); // 产生一个数据，并模拟接收并放到容器里.
+        dataReceiver3.addValue(list3); // 产生一个数据，并模拟接收并放到容器里.
+
         if (!isStop) {
             repaint();
         }
